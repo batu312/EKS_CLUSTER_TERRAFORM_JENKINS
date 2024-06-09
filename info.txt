@@ -1,0 +1,66 @@
+Install Jenkins 
+=========================
+#!/bin/bash
+sudo apt update -y
+sudo apt install fontconfig openjdk-17-jre -y
+java -version
+openjdk version "17.0.8" 2023-07-18
+OpenJDK Runtime Environment 
+OpenJDK 64-Bit Server VM 
+sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian/jenkins.io-2023.key
+echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc]" \
+  https://pkg.jenkins.io/debian binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update -y
+sudo apt-get install jenkins -y
+
+Terraform setup
+===================
+Install terraform plugin in jenkins
+now download binary of terraform from terraform.io
+wget https://releases.hashicorp.com/terraform/1.8.4/terraform_1.8.4_linux_amd64.zip
+sudo mv terrform /usr/bin/
+which terraform
+terraform --version
+GOTO --MANAGE JENKINS --- CREDENTIALS --- GLOBAL --- ADD CREDENTIALS --- add access key and secret key with secret text
+
+if you are not having any code in github and manually creating resorce by manually writing code use below
+before you run pipeline create a iAM role with admin acess and attach to jenkins machine 
+
+
+pipeline {
+
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+    }
+
+   agent  any
+    stages {
+        stage('checkout') {
+            steps {
+                 script{
+                            git branch: 'main', credentialsId: 'git', url: 'https://github.com/batu312/EKS_CLUSTER_TERRAFORM_JENKINS.git'
+                        }
+                    }
+                }
+        stage('Terraform Initialization') {
+            steps {
+                 script{
+                     
+                     sh 'terraform init'
+                        }
+                    }
+                }  
+        stage('Terraform plan') {
+            steps {
+                 script{
+                     
+                     sh 'terraform plan'
+                        }
+                    }
+                }            
+                
+            }
+   }
